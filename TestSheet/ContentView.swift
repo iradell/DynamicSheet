@@ -475,24 +475,18 @@ struct DynamicHeightSheetModifier<SheetContent: View>: ViewModifier {
         content
             .sheet(isPresented: $isPresented) {
                 sheetBody
-                    .background(
-                        GeometryReader { proxy in
-                            Color.clear
-                                .task {
-                                    updateTotalHeight(proxy.size.height)
-                                }
-                                .onChange(of: proxy.size.height) { newHeight in
-                                    withAnimation(
-                                        .snappy(
-                                            duration: 0.25,
-                                            extraBounce: 0
-                                        )
-                                    ) {
-                                        updateTotalHeight(newHeight)
-                                    }
-                                }
+                    .onGeometryChange(for: CGFloat.self) { proxy in
+                        proxy.size.height
+                    } action: { newHeight in
+                        withAnimation(
+                            .snappy(
+                                duration: 0.25,
+                                extraBounce: 0
+                            )
+                        ) {
+                            updateTotalHeight(newHeight)
                         }
-                    )
+                    }
                     .presentationDragIndicator(.visible)
                     .presentationDetents(
                         totalHeight == .zero
@@ -525,17 +519,11 @@ struct DynamicHeightSheetModifier<SheetContent: View>: ViewModifier {
             sheetContent
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            GeometryReader { proxy in
-                Color.clear
-                    .task {
-                        updateContentHeight(proxy.size.height)
-                    }
-                    .onChange(of: proxy.size.height) { newHeight in
-                        updateContentHeight(newHeight)
-                    }
-            }
-        )
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: { newHeight in
+            updateContentHeight(newHeight)
+        }
     }
 
     private func updateTotalHeight(_ newHeight: CGFloat) {
